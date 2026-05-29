@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyMate – Hi-Fi Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004080;
+    --primary-light: rgba(0,64,128,0.08);
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #5a6075;
+    --light: #9098b1;
+    --border: #e4e8f0;
+    --danger: #d9534f;
+    --warning: #e8920e;
+    --success: #3a9e5f;
+    --input-bg: #f8f9fc;
+    --shadow: 0 2px 8px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+
+body {
+    background: #c8cdd8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 24px 0 40px;
+}
+
+/* Screen selector bar */
+.screen-selector {
+    width: 375px;
+    margin-bottom: 12px;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.screen-selector span {
+    font-size: 10px;
+    color: #9098b1;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+.screen-btn {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #3a4060;
+    background: transparent;
+    color: #c0c8e0;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+.screen-btn:hover, .screen-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Phone shell */
+#app-container {
+    width: 375px;
+    height: 700px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background: var(--primary);
+    color: white;
+    padding: 14px 16px;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 52px;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+}
+.back-btn {
+    position: absolute;
+    left: 16px;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    display: none;
+    line-height: 1;
+    padding: 4px;
+}
+.back-btn:hover { opacity: 0.8; }
+
+/* Content */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 80px;
+    scroll-behavior: smooth;
+}
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Views */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Principle chip */
+.principle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid rgba(0,64,128,0.15);
+}
+.principle-chip::before { content: "◆"; font-size: 7px; }
+
+/* Typography */
+h1 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+h2 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+h3 { font-size: 14px; font-weight: 700; color: var(--text); }
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--light);
+    margin: 20px 0 10px;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* Cards */
+.card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+/* Summary tiles (P4) */
+.summary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.summary-tile {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 8px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.summary-tile .big-num {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.summary-tile .tile-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Module progress card */
+.module-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+.module-code { font-size: 13px; font-weight: 700; color: var(--text); }
+.module-name { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.module-pct { font-size: 11px; color: var(--muted); }
+.progress-bg {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+/* Quick actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.action-btn {
+    background: var(--card);
+    color: var(--primary);
+    border: 1px solid var(--border);
+    padding: 14px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: all 0.15s;
+}
+.action-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Tasks */
+.tabs {
+    display: flex;
+    background: var(--card);
+    padding: 4px;
+    border-radius: 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 18px;
+    transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--text); color: white; font-weight: 700; }
+
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.task-item:last-child { border-bottom: none; }
+.task-item:hover { background: var(--primary-light); border-radius: 6px; padding-left: 6px; margin: 0 -6px; }
+
+.checkbox {
+    width: 22px; height: 22px; min-width: 22px;
+    border: 2px solid var(--light);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+}
+.checkbox:hover { border-color: var(--primary); }
+
+.task-details { flex: 1; min-width: 0; }
+.task-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.task-meta {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.badge.overdue { background: rgba(217,83,79,0.12); color: var(--danger); }
+.badge.soon { background: rgba(232,146,14,0.12); color: var(--warning); }
+
+.delete-icon {
+    color: var(--light);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: color 0.15s;
+    border-radius: 4px;
+}
+.delete-icon:hover { color: var(--danger); background: rgba(217,83,79,0.08); }
+
+/* Completed state */
+.completed .checkbox { background: var(--success); border-color: var(--success); }
+.completed .checkbox::after { content: "✓"; color: white; font-size: 12px; font-weight: 700; }
+.completed .task-name { text-decoration: line-through; color: var(--light); }
+
+/* Forms */
+.input-group { margin-bottom: 20px; }
+label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+input[type="text"], input[type="date"], select, textarea {
+    width: 100%;
+    background: var(--input-bg);
+    border: none;
+    border-bottom: 2px solid var(--border);
+    padding: 12px 10px;
+    font-size: 15px;
+    border-radius: 6px 6px 0 0;
+    color: var(--text);
+    transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-bottom-color: var(--primary);
+    background: white;
+}
+input:hover, select:hover { border-bottom-color: var(--muted); }
+
+.btn-primary {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,64,128,0.3);
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+}
+.btn-primary:hover {
+    background: #00306a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0,64,128,0.4);
+}
+
+/* Priority buttons */
+.priority-row { display: flex; gap: 8px; margin-top: 8px; }
+.priority-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    color: var(--muted);
+    transition: all 0.15s;
+}
+.priority-btn:hover { border-color: var(--primary); color: var(--primary); }
+.priority-btn.high.selected { background: rgba(217,83,79,0.1); border-color: var(--danger); color: var(--danger); }
+.priority-btn.med.selected { background: rgba(232,146,14,0.1); border-color: var(--warning); color: var(--warning); }
+.priority-btn.low.selected { background: rgba(58,158,95,0.1); border-color: var(--success); color: var(--success); }
+
+/* Study session (G3) */
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--muted);
+    padding: 12px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-outline.selected { background: var(--primary); border-color: var(--primary); color: white; }
+.vertical-gap { height: 28px; }
+
+/* Module overview (G1) */
+.module-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.module-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.module-tier-1 { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+.module-tier-2 { font-size: 13px; font-weight: 400; color: var(--muted); margin-bottom: 12px; }
+.module-tier-3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--light);
+    margin-top: 6px;
+}
+
+/* Deadline status (G2) */
+.deadline-card {
+    background: var(--card);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    overflow: hidden;
+}
+.status-bar { width: 5px; flex-shrink: 0; }
+.status-bar.red { background: var(--danger); }
+.status-bar.amber { background: var(--warning); }
+.status-bar.green { background: var(--success); }
+.deadline-body { flex: 1; padding: 14px; }
+.deadline-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.deadline-meta { font-size: 12px; color: var(--muted); }
+.status-label {
+    padding: 14px 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+}
+.status-text { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.status-text.red { color: var(--danger); }
+.status-text.amber { color: var(--warning); }
+.status-text.green { color: var(--success); }
+
+.colour-legend {
+    display: flex;
+    gap: 14px;
+    padding: 10px 12px;
+    background: var(--card);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Notes (G4) */
+.note-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    cursor: pointer;
+}
+.note-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.note-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.note-module { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+.note-date { font-size: 11px; color: var(--light); }
+
+.fab {
+    position: absolute;
+    bottom: 80px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.15s;
+    border: none;
+}
+.fab:hover { background: #00306a; transform: scale(1.05); }
+
+/* Task detail (G5) */
+.detail-header {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+.detail-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+.detail-meta { font-size: 13px; color: var(--muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+.detail-body { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 20px; }
+
+.subtask-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.subtask-item:last-child { border-bottom: none; }
+.subtask-label { font-size: 14px; color: var(--text); }
+.subtask-duration { font-size: 11px; color: var(--light); margin-top: 2px; }
+
+.detail-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-secondary {
+    flex: 1;
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Calendar */
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.cal-nav { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 14px; cursor: pointer; color: var(--text); }
+.cal-nav:hover { background: var(--primary-light); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-day-header { text-align: center; font-size: 10px; font-weight: 700; color: var(--light); text-transform: uppercase; padding: 6px 0; }
+.cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+}
+.cal-day:hover { background: var(--primary-light); }
+.cal-day.today { background: var(--primary); color: white; font-weight: 700; }
+.cal-day.has-task::after { content: ""; display: block; width: 4px; height: 4px; background: var(--warning); border-radius: 50%; position: absolute; bottom: 4px; }
+.cal-day { position: relative; }
+.cal-day.other-month { color: var(--light); }
+
+/* More screen */
+.more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.more-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 20px 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+}
+.more-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+.more-icon { font-size: 28px; margin-bottom: 8px; }
+.more-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.more-sublabel { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Daily schedule */
+.schedule-item {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+}
+.schedule-item:last-child { border-bottom: none; }
+.sched-time { font-size: 12px; font-weight: 700; color: var(--primary); min-width: 42px; padding-top: 1px; }
+.sched-event { font-size: 13px; color: var(--text); }
+.sched-module { font-size: 11px; color: var(--muted); }
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 65px;
+    z-index: 10;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+}
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--light);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    gap: 3px;
+    transition: color 0.15s;
+}
+.nav-item:hover { color: var(--primary); }
+.nav-item.active { color: var(--primary); font-weight: 700; }
+.nav-icon { font-size: 20px; line-height: 1; }
+
+/* Toast */
+.toast {
+    position: absolute;
+    bottom: 78px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26,26,46,0.92);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+}
+
+/* Delete overlay */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+.overlay.active { opacity: 1; pointer-events: all; }
+.dialog-box {
+    background: white;
+    width: 82%;
+    border-radius: 16px;
+    padding: 28px 24px 20px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.dialog-title { font-size: 17px; font-weight: 700; color: var(--danger); margin-bottom: 10px; }
+.dialog-body { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 24px; }
+.dialog-actions { display: flex; gap: 10px; }
+.btn-cancel {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 13px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-cancel:hover { border-color: var(--muted); }
+.btn-delete {
+    flex: 1;
+    background: var(--danger);
+    border: none;
+    color: white;
+    padding: 13px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(217,83,79,0.35);
+    transition: all 0.15s;
+}
+.btn-delete:hover { background: #c0392b; transform: translateY(-1px); }
+
+/* P5 overlay note */
+.overlay-principle {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<!-- Screen selector (not part of prototype — for navigation during screenshots) -->
+<div class="screen-selector">
+  <span>Screen:</span>
+  <button class="screen-btn active" onclick="jumpTo('home','Dashboard','P1 Strive for Consistency',true,0)">P1 Dashboard</button>
+  <button class="screen-btn" onclick="jumpTo('tasks','Tasks','P2 Informative Feedback',true,1)">P2 Tasks</button>
+  <button class="screen-btn" onclick="jumpTo('add-task','Create New Task','P3 Affordances',false,1)">P3 Add Task</button>
+  <button class="screen-btn" onclick="jumpTo('home','Study Dashboard','P4 Reduce Memory Load',true,0)">P4 Dashboard</button>
+  <button class="screen-btn" onclick="jumpTo('tasks','Tasks','P5 Prevent Errors — tap 🗑 on any task',true,1)">P5 Delete</button>
+  <button class="screen-btn" onclick="jumpTo('modules','Module Overview','G1 Visual Hierarchy',false,3)">G1 Modules</button>
+  <button class="screen-btn" onclick="jumpTo('deadline','Deadline Status','G2 Colour and Contrast',false,3)">G2 Deadlines</button>
+  <button class="screen-btn" onclick="jumpTo('study','Study Session','G3 Gestalt Proximity',false,3)">G3 Study</button>
+  <button class="screen-btn" onclick="jumpTo('notes','My Notes','G4 White Space',false,3)">G4 Notes</button>
+  <button class="screen-btn" onclick="jumpTo('task-detail','Task Detail','G5 Typography',false,1)">G5 Detail</button>
+  <button class="screen-btn" onclick="jumpTo('calendar','Calendar','Navigation',true,2)">Calendar</button>
+</div>
+
+<div id="app-container">
+    <div class="header">
+        <div class="back-btn" id="back-btn" onclick="goBack()">←</div>
+        <span id="header-title">StudyMate</span>
+    </div>
+
+    <div class="content">
+
+        <!-- HOME: P1 Consistency + P4 Memory Load -->
+        <div id="view-home" class="view active">
+            <div class="principle-chip" id="home-chip">P1 · Strive for Consistency</div>
+
+            <!-- P4: 3 summary tiles -->
+            <div class="summary-row">
+                <div class="summary-tile">
+                    <div class="big-num">3</div>
+                    <div class="tile-label">Due Today</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="big-num">7</div>
+                    <div class="tile-label">Done</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="big-num">5</div>
+                    <div class="tile-label">Day Streak</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-btn" onclick="navigateTo('add-task','Create New Task')">Add Task</div>
+                <div class="action-btn" onclick="navigateTo('study','Study Session')">Study Timer</div>
+                <div class="action-btn" onclick="navigateTo('notes','My Notes')">View Notes</div>
+            </div>
+
+            <div class="section-label">Module Progress</div>
+            <div class="card">
+                <div class="module-row">
+                    <span class="module-code">INSY7311</span>
+                    <span class="module-pct">70%</span>
+                </div>
+                <div class="module-name">Information Systems 3A</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:70%"></div></div>
+            </div>
+            <div class="card">
+                <div class="module-row">
+                    <span class="module-code">PRG7311</span>
+                    <span class="module-pct">45%</span>
+                </div>
+                <div class="module-name">Programming 3A</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:45%"></div></div>
+            </div>
+
+            <div class="section-label">Today's Schedule</div>
+            <div class="card">
+                <div class="schedule-item">
+                    <div class="sched-time">09:00</div>
+                    <div>
+                        <div class="sched-event">Summative Project Review</div>
+                        <div class="sched-module">INSY7311</div>
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="sched-time">14:00</div>
+                    <div>
+                        <div class="sched-event">Database Setup</div>
+                        <div class="sched-module">PRG7311</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TASKS: P2 Informative Feedback -->
+        <div id="view-tasks" class="view">
+            <div class="principle-chip">P2 · Offer Informative Feedback</div>
+            <div class="tabs">
+                <div class="tab active" onclick="setTab(this)">All</div>
+                <div class="tab" onclick="setTab(this)">Today</div>
+                <div class="tab" onclick="setTab(this)">Week</div>
+                <div class="tab" onclick="setTab(this)">Done</div>
+            </div>
+            <div class="card" id="task-card-1">
+                <div class="task-item" onclick="navigateTo('task-detail','Task Detail')">
+                    <div class="checkbox" onclick="event.stopPropagation(); toggleTask(this)"></div>
+                    <div class="task-details">
+                        <div class="task-name">Summative Prototype</div>
+                        <div class="task-meta">
+                            <span class="badge overdue">⚠ Overdue</span>
+                            <span>INSY7311</span>
+                        </div>
+                    </div>
+                    <div class="delete-icon" onclick="event.stopPropagation(); promptDelete('Summative Prototype','task-card-1')">🗑</div>
+                </div>
+            </div>
+            <div class="card" id="task-card-2">
+                <div class="task-item" onclick="navigateTo('task-detail','Task Detail')">
+                    <div class="checkbox" onclick="event.stopPropagation(); toggleTask(this)"></div>
+                    <div class="task-details">
+                        <div class="task-name">Database Setup Script</div>
+                        <div class="task-meta">
+                            <span class="badge soon">⏱ Due in 2 days</span>
+                            <span>PRG7311</span>
+                        </div>
+                    </div>
+                    <div class="delete-icon" onclick="event.stopPropagation(); promptDelete('Database Setup Script','task-card-2')">🗑</div>
+                </div>
+            </div>
+            <div class="card completed" id="task-card-3">
+                <div class="task-item">
+                    <div class="checkbox" onclick="event.stopPropagation(); toggleTask(this)"></div>
+                    <div class="task-details">
+                        <div class="task-name">Assignment 2 Report</div>
+                        <div class="task-meta">Completed · INSY7311</div>
+                    </div>
+                    <div class="delete-icon" onclick="event.stopPropagation(); promptDelete('Assignment 2 Report','task-card-3')">🗑</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD TASK: P3 Affordances -->
+        <div id="view-add-task" class="view">
+            <div class="principle-chip">P3 · Affordances</div>
+            <div class="card" style="padding:20px;">
+                <div class="input-group">
+                    <label>Task Name</label>
+                    <input type="text" placeholder="e.g. Read Chapter 4">
+                </div>
+                <div class="input-group">
+                    <label>Module</label>
+                    <select>
+                        <option>INSY7311 – Information Systems</option>
+                        <option>PRG7311 – Programming</option>
+                        <option>DBA7311 – Database Admin</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Due Date</label>
+                    <input type="date">
+                </div>
+                <div class="input-group" style="margin-bottom:8px">
+                    <label>Priority</label>
+                    <div class="priority-row">
+                        <button class="priority-btn high selected" onclick="selectPriority(this,'high')">High</button>
+                        <button class="priority-btn med" onclick="selectPriority(this,'med')">Medium</button>
+                        <button class="priority-btn low" onclick="selectPriority(this,'low')">Low</button>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="showToastAndReturn('Task saved successfully ✓')">Save Task</button>
+            </div>
+        </div>
+
+        <!-- MODULE OVERVIEW: G1 Visual Hierarchy -->
+        <div id="view-modules" class="view">
+            <div class="principle-chip">G1 · Visual Hierarchy</div>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">4 active modules · Tap to view details</div>
+
+            <div class="module-card">
+                <div class="module-tier-1">INSY7311</div>
+                <div class="module-tier-2">Information Systems 3A</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:70%"></div></div>
+                <div class="module-tier-3"><span>70% complete</span><span>2 tasks due</span></div>
+            </div>
+            <div class="module-card">
+                <div class="module-tier-1">PRG7311</div>
+                <div class="module-tier-2">Programming 3A</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:45%"></div></div>
+                <div class="module-tier-3"><span>45% complete</span><span>1 task due</span></div>
+            </div>
+            <div class="module-card">
+                <div class="module-tier-1">DBA7311</div>
+                <div class="module-tier-2">Database Administration</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:88%"></div></div>
+                <div class="module-tier-3"><span>88% complete</span><span>0 tasks due</span></div>
+            </div>
+            <div class="module-card">
+                <div class="module-tier-1">NET7311</div>
+                <div class="module-tier-2">Network Infrastructure</div>
+                <div class="progress-bg"><div class="progress-fill" style="width:30%"></div></div>
+                <div class="module-tier-3"><span>30% complete</span><span>3 tasks due</span></div>
+            </div>
+        </div>
+
+        <!-- DEADLINE STATUS: G2 Colour and Contrast -->
+        <div id="view-deadline" class="view">
+            <div class="principle-chip">G2 · Colour and Contrast</div>
+            <div class="colour-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Overdue</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>Due soon</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Submitted</div>
+            </div>
+            <div class="deadline-card">
+                <div class="status-bar red"></div>
+                <div class="deadline-body">
+                    <div class="deadline-name">Summative Prototype</div>
+                    <div class="deadline-meta">INSY7311 · Was due 25 May 2026</div>
+                </div>
+                <div class="status-label">
+                    <span class="status-text red">⚠ Overdue</span>
+                </div>
+            </div>
+            <div class="deadline-card">
+                <div class="status-bar amber"></div>
+                <div class="deadline-body">
+                    <div class="deadline-name">Database Setup Script</div>
+                    <div class="deadline-meta">PRG7311 · Due 30 May 2026</div>
+                </div>
+                <div class="status-label">
+                    <span class="status-text amber">⏱ Due Soon</span>
+                </div>
+            </div>
+            <div class="deadline-card">
+                <div class="status-bar amber"></div>
+                <div class="deadline-body">
+                    <div class="deadline-name">Network Lab Report</div>
+                    <div class="deadline-meta">NET7311 · Due 31 May 2026</div>
+                </div>
+                <div class="status-label">
+                    <span class="status-text amber">⏱ Due Soon</span>
+                </div>
+            </div>
+            <div class="deadline-card">
+                <div class="status-bar green"></div>
+                <div class="deadline-body">
+                    <div class="deadline-name">Assignment 2 Report</div>
+                    <div class="deadline-meta">INSY7311 · Submitted 15 Apr 2026</div>
+                </div>
+                <div class="status-label">
+                    <span class="status-text green">✓ Done</span>
+                </div>
+            </div>
+            <div class="deadline-card">
+                <div class="status-bar green"></div>
+                <div class="deadline-body">
+                    <div class="deadline-name">ERD Submission</div>
+                    <div class="deadline-meta">DBA7311 · Submitted 10 Apr 2026</div>
+                </div>
+                <div class="status-label">
+                    <span class="status-text green">✓ Done</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDY SESSION: G3 Gestalt Proximity -->
+        <div id="view-study" class="view">
+            <div class="principle-chip">G3 · Gestalt Law of Proximity</div>
+            <div class="card" style="padding:20px;">
+                <label>Study Duration</label>
+                <div class="btn-grid">
+                    <div class="btn-outline selected" onclick="selectTime(this)">25 Min</div>
+                    <div class="btn-outline" onclick="selectTime(this)">45 Min</div>
+                    <div class="btn-outline" onclick="selectTime(this)">60 Min</div>
+                </div>
+
+                <div style="margin-top:12px">
+                    <label>Break Duration</label>
+                    <div class="btn-grid">
+                        <div class="btn-outline" onclick="selectBreak(this)">5 Min</div>
+                        <div class="btn-outline selected" onclick="selectBreak(this)">10 Min</div>
+                        <div class="btn-outline" onclick="selectBreak(this)">15 Min</div>
+                    </div>
+                </div>
+
+                <div class="vertical-gap"></div>
+
+                <div class="input-group">
+                    <label>Module to Study</label>
+                    <select>
+                        <option>INSY7311 – Information Systems</option>
+                        <option>PRG7311 – Programming</option>
+                        <option>DBA7311 – Database Admin</option>
+                    </select>
+                </div>
+
+                <button class="btn-primary" onclick="showToast('Session started ▶')">Start Session</button>
+            </div>
+        </div>
+
+        <!-- NOTES: G4 White Space -->
+        <div id="view-notes" class="view">
+            <div class="principle-chip">G4 · White Space</div>
+            <div class="note-card">
+                <div class="note-module">INSY7311</div>
+                <div class="note-title">Norman's Design Principles</div>
+                <div class="note-date">Edited 22 May 2026</div>
+            </div>
+            <div class="note-card">
+                <div class="note-module">INSY7311</div>
+                <div class="note-title">Gestalt Laws — Summary</div>
+                <div class="note-date">Edited 18 May 2026</div>
+            </div>
+            <div class="note-card">
+                <div class="note-module">PRG7311</div>
+                <div class="note-title">OOP Design Patterns</div>
+                <div class="note-date">Edited 14 May 2026</div>
+            </div>
+            <div class="note-card">
+                <div class="note-module">NET7311</div>
+                <div class="note-title">OSI Model Layers</div>
+                <div class="note-date">Edited 10 May 2026</div>
+            </div>
+        </div>
+        <button class="fab" id="notes-fab" style="display:none" onclick="showToast('New note created')">+</button>
+
+        <!-- TASK DETAIL: G5 Typography -->
+        <div id="view-task-detail" class="view">
+            <div class="principle-chip">G5 · Typography and Readability</div>
+            <div class="detail-header">
+                <div class="detail-title">Summative Project Prototype</div>
+                <div class="detail-meta">
+                    <span style="font-weight:700; color:var(--primary)">INSY7311</span>
+                    <span>Due 25 May 2026</span>
+                    <span class="badge overdue">⚠ Overdue</span>
+                </div>
+            </div>
+
+            <div class="detail-body">
+                Build a fully coded high-fidelity prototype demonstrating all five Norman/Schneiderman principles and five LU6 visual design guidelines. Submit via GitHub with the index.html as the entry point.
+            </div>
+
+            <div class="section-label">Sub-tasks</div>
+            <div class="card">
+                <div class="subtask-item">
+                    <div class="checkbox" onclick="toggleTask(this)" style="margin-top:2px"></div>
+                    <div>
+                        <div class="subtask-label">Design all 10 screens</div>
+                        <div class="subtask-duration">Est. 3 hrs</div>
+                    </div>
+                </div>
+                <div class="subtask-item completed">
+                    <div class="checkbox" onclick="toggleTask(this)" style="margin-top:2px"></div>
+                    <div>
+                        <div class="subtask-label">Write theoretical descriptions</div>
+                        <div class="subtask-duration">Est. 2 hrs</div>
+                    </div>
+                </div>
+                <div class="subtask-item">
+                    <div class="checkbox" onclick="toggleTask(this)" style="margin-top:2px"></div>
+                    <div>
+                        <div class="subtask-label">Upload to GitHub &amp; submit link</div>
+                        <div class="subtask-duration">Est. 30 mins</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <button class="btn-secondary" onclick="promptDelete('Summative Prototype','task-card-1')">Delete</button>
+                <button class="btn-primary" style="box-shadow:none; margin-top:0" onclick="showToast('Task updated ✓')">Mark Complete</button>
+            </div>
+        </div>
+
+        <!-- CALENDAR -->
+        <div id="view-calendar" class="view">
+            <div class="principle-chip">Navigation · Calendar View</div>
+            <div class="calendar-header">
+                <button class="cal-nav">‹</button>
+                <h2 style="margin:0; font-size:17px;">May 2026</h2>
+                <button class="cal-nav">›</button>
+            </div>
+            <div class="card">
+                <div class="cal-grid" id="cal-grid"></div>
+            </div>
+            <div class="section-label">Upcoming deadlines</div>
+            <div class="card">
+                <div class="schedule-item">
+                    <div class="sched-time">30 May</div>
+                    <div>
+                        <div class="sched-event">Database Setup Script</div>
+                        <div class="sched-module">PRG7311</div>
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="sched-time">31 May</div>
+                    <div>
+                        <div class="sched-event">Network Lab Report</div>
+                        <div class="sched-module">NET7311</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MORE -->
+        <div id="view-more" class="view">
+            <div class="principle-chip">Navigation · More</div>
+            <div class="more-grid">
+                <div class="more-card" onclick="navigateTo('modules','Module Overview')">
+                    <div class="more-icon">📚</div>
+                    <div class="more-label">Modules</div>
+                    <div class="more-sublabel">G1 · Visual Hierarchy</div>
+                </div>
+                <div class="more-card" onclick="navigateTo('deadline','Deadline Status')">
+                    <div class="more-icon">🎯</div>
+                    <div class="more-label">Deadlines</div>
+                    <div class="more-sublabel">G2 · Colour &amp; Contrast</div>
+                </div>
+                <div class="more-card" onclick="navigateTo('study','Study Session')">
+                    <div class="more-icon">⏱</div>
+                    <div class="more-label">Study Timer</div>
+                    <div class="more-sublabel">G3 · Proximity</div>
+                </div>
+                <div class="more-card" onclick="navigateTo('notes','My Notes')">
+                    <div class="more-icon">📝</div>
+                    <div class="more-label">Notes</div>
+                    <div class="more-sublabel">G4 · White Space</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .content -->
+
+    <div class="toast" id="toast-message">Notification</div>
+
+    <!-- P5 Delete Overlay -->
+    <div class="overlay" id="delete-overlay">
+        <div class="overlay-principle">P5 · Prevent Errors</div>
+        <div class="dialog-box">
+            <div class="dialog-title">Delete Task?</div>
+            <div class="dialog-body">Are you sure you want to permanently delete "<span id="delete-target-name" style="font-weight:700"></span>"? This cannot be undone.</div>
+            <div class="dialog-actions">
+                <button class="btn-cancel" onclick="closeOverlay()">Cancel</button>
+                <button class="btn-delete" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="bottom-nav">
+        <div class="nav-item active" id="nav-home" onclick="switchMainTab('home',this,'Dashboard')">
+            <div class="nav-icon">⌂</div><div>Home</div>
+        </div>
+        <div class="nav-item" id="nav-tasks" onclick="switchMainTab('tasks',this,'Tasks')">
+            <div class="nav-icon">✓</div><div>Tasks</div>
+        </div>
+        <div class="nav-item" id="nav-calendar" onclick="switchMainTab('calendar',this,'Calendar')">
+            <div class="nav-icon">📅</div><div>Calendar</div>
+        </div>
+        <div class="nav-item" id="nav-more" onclick="switchMainTab('more',this,'More')">
+            <div class="nav-icon">≡</div><div>More</div>
+        </div>
+    </div>
+</div><!-- end #app-container -->
+
+<script>
+let historyStack = ['home'];
+let itemToDeleteId = null;
+let currentMainTab = 'home';
+
+/* ── Navigation ── */
+function switchMainTab(viewId, element, title) {
+    document.getElementById('back-btn').style.display = 'none';
+    document.getElementById('bottom-nav').style.display = 'flex';
+    document.getElementById('header-title').innerText = title;
+    document.getElementById('notes-fab').style.display = 'none';
+
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    element.classList.add('active');
+
+    historyStack = [viewId];
+    currentMainTab = viewId;
+    updateScreenBtns(viewId);
+    if (viewId === 'notes') document.getElementById('notes-fab').style.display = 'flex';
+}
+
+function navigateTo(viewId, title) {
+    historyStack.push(viewId);
+    document.getElementById('back-btn').style.display = 'block';
+    document.getElementById('bottom-nav').style.display = 'none';
+    document.getElementById('header-title').innerText = title;
+    document.getElementById('notes-fab').style.display = 'none';
+
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+
+    updateScreenBtns(viewId);
+    if (viewId === 'notes') document.getElementById('notes-fab').style.display = 'flex';
+}
+
+function goBack() {
+    if (historyStack.length > 1) {
+        historyStack.pop();
+        const prev = historyStack[historyStack.length - 1];
+        const mainTabs = {home:'Dashboard',tasks:'Tasks',calendar:'Calendar',more:'More'};
+        if (mainTabs[prev]) {
+            const navEl = document.getElementById('nav-'+prev);
+            switchMainTab(prev, navEl, mainTabs[prev]);
+        } else {
+            const titles = {'add-task':'Create New Task','modules':'Module Overview','deadline':'Deadline Status','study':'Study Session','notes':'My Notes','task-detail':'Task Detail'};
+            navigateTo(prev, titles[prev] || prev);
+        }
+    }
+}
+
+// Jump from screen selector bar
+function jumpTo(viewId, title, chipHint, isMainTab, navIdx) {
+    if (isMainTab) {
+        const navItems = document.querySelectorAll('.nav-item');
+        switchMainTab(viewId, navItems[navIdx], title);
+    } else {
+        // Set a sensible return point
+        historyStack = ['home', viewId];
+        document.getElementById('back-btn').style.display = 'block';
+        document.getElementById('bottom-nav').style.display = 'none';
+        document.getElementById('header-title').innerText = title;
+        document.getElementById('notes-fab').style.display = 'none';
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-'+viewId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
+        if (viewId === 'notes') document.getElementById('notes-fab').style.display = 'flex';
+    }
+    updateScreenBtns(viewId);
+}
+
+function updateScreenBtns(activeView) {
+    const map = {home:0,tasks:1,'add-task':2,home_p4:3,tasks_p5:4,modules:5,deadline:6,study:7,notes:8,'task-detail':9,calendar:10,more:10};
+    document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+    // Find by view ID keyword in onclick
+    document.querySelectorAll('.screen-btn').forEach(b => {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+activeView+"'")) {
+            b.classList.add('active');
+        }
+    });
+}
+
+/* ── Task interactions ── */
+function toggleTask(el) {
+    const card = el.closest('.card, .subtask-item');
+    card.classList.toggle('completed');
+    showToast(card.classList.contains('completed') ? '✓ Task marked complete' : 'Task reopened');
+}
+
+function setTab(el) {
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+/* ── Priority buttons ── */
+function selectPriority(el, level) {
+    document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+/* ── Study session buttons ── */
+function selectTime(el) {
+    el.closest('.btn-grid').querySelectorAll('.btn-outline').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+}
+function selectBreak(el) {
+    el.closest('.btn-grid').querySelectorAll('.btn-outline').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+/* ── Toast ── */
+function showToast(msg) {
+    const t = document.getElementById('toast-message');
+    t.innerText = msg; t.style.opacity = '1';
+    setTimeout(() => t.style.opacity = '0', 2500);
+}
+function showToastAndReturn(msg) {
+    showToast(msg);
+    setTimeout(goBack, 900);
+}
+
+/* ── Delete overlay ── */
+function promptDelete(name, id) {
+    document.getElementById('delete-target-name').innerText = name;
+    itemToDeleteId = id;
+    document.getElementById('delete-overlay').classList.add('active');
+}
+function closeOverlay() {
+    document.getElementById('delete-overlay').classList.remove('active');
+    itemToDeleteId = null;
+}
+function confirmDelete() {
+    if (itemToDeleteId) {
+        const el = document.getElementById(itemToDeleteId);
+        if (el) el.style.display = 'none';
+        showToast('Task deleted');
+    }
+    closeOverlay();
+}
+
+/* ── Calendar builder ── */
+function buildCalendar() {
+    const grid = document.getElementById('cal-grid');
+    const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const taskDays = [28, 30, 31];
+    let html = days.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+    // May 2026 starts on Friday (index 5)
+    for (let i = 0; i < 5; i++) html += `<div class="cal-day other-month"></div>`;
+    for (let d = 1; d <= 31; d++) {
+        const isToday = d === 28;
+        const hasTask = taskDays.includes(d);
+        html += `<div class="cal-day${isToday?' today':''}${hasTask?' has-task':''}">${d}</div>`;
+    }
+    grid.innerHTML = html;
+}
+buildCalendar();
+</script>
+</body>
+</html>
